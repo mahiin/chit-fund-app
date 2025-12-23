@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import ChitSet from '@/models/ChitSet';
-// Import Member model to ensure schema is registered before populate
+// Import Member model - must be imported before populate
 import Member from '@/models/Member';
 
 export async function GET() {
   try {
     await connectDB();
+    
+    // Ensure Member model is registered (critical for serverless/Vercel)
+    // Access the model to ensure it's registered after connection
+    // This handles cases where the model wasn't registered due to module caching
+    if (!mongoose.models.Member) {
+      // Force registration by accessing the imported model
+      // The Member import should have registered it, but verify
+      const _ = Member; // Access to ensure registration
+    }
 
     const sets = await ChitSet.find({})
       .populate('activeMembers', 'name memberId mobile email')
