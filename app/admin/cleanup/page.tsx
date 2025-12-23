@@ -184,7 +184,7 @@ export default function CleanupPage() {
                 <div>
                   <h3 className="font-semibold text-yellow-800 mb-1">Delete All Chit Sets</h3>
                   <p className="text-sm text-yellow-700">
-                    Removes all chit fund groups and winner history. Members will remain.
+                    Removes all fund groups and winner history. Members will remain.
                   </p>
                 </div>
                 <button
