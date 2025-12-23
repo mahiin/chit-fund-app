@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 interface User {
   id: string;
   username: string;
-  role: 'admin' | 'user';
+  role: 'superadmin' | 'admin' | 'user';
   name: string;
 }
 
@@ -16,6 +16,9 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAdmin: () => boolean;
+  isSuperAdmin: () => boolean;
+  canUpload: () => boolean;
+  canManageMembers: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,11 +90,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = () => {
-    return user?.role === 'admin';
+    return user?.role === 'admin' || user?.role === 'superadmin';
+  };
+
+  const isSuperAdmin = () => {
+    return user?.role === 'superadmin';
+  };
+
+  const canUpload = () => {
+    return user?.role === 'admin' || user?.role === 'superadmin';
+  };
+
+  const canManageMembers = () => {
+    // All users can manage members (add/remove/upload)
+    return !!user;
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isSuperAdmin, canUpload, canManageMembers }}>
       {children}
     </AuthContext.Provider>
   );

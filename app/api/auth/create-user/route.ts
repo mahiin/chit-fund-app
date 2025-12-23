@@ -8,9 +8,9 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    // Check if user is admin
+    // Check if user is admin or superadmin
     const session = getSessionFromRequest(request);
-    if (!session || session.role !== 'admin') {
+    if (!session || (session.role !== 'admin' && session.role !== 'superadmin')) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -27,8 +27,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate role
-    const userRole = role === 'admin' ? 'admin' : 'user';
+    // Validate role - only superadmin can create superadmin users
+    let userRole: 'superadmin' | 'admin' | 'user' = 'user';
+    if (role === 'superadmin') {
+      if (session.role !== 'superadmin') {
+        return NextResponse.json(
+          { error: 'Unauthorized - Only Super Admin can create Super Admin users' },
+          { status: 403 }
+        );
+      }
+      userRole = 'superadmin';
+    } else if (role === 'admin') {
+      // Admin and superadmin can create admin users
+      userRole = 'admin';
+    } else {
+      userRole = 'user';
+    }
 
     // Check if username already exists
     const existingUser = await User.findOne({ username: username.toLowerCase() });

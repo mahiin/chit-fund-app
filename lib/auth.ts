@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 export interface UserSession {
   userId: string;
   username: string;
-  role: 'admin' | 'user';
+  role: 'superadmin' | 'admin' | 'user';
   name: string;
 }
 

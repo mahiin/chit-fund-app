@@ -6,6 +6,7 @@ import Link from 'next/link';
 import BulkUpload from './BulkUpload';
 import CreateChitSet from './CreateChitSet';
 import ChitSetMembers from './ChitSetMembers';
+import ChitFundCalculation from './ChitFundCalculation';
 
 interface ChitSet {
   _id: string;
@@ -151,6 +152,18 @@ export default function ManagementOverview() {
           <BulkUpload />
         </div>
       </div>
+
+      {/* Chit Fund Calculations */}
+      {sets.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">💰 Chit Fund Distribution Calculations</h3>
+          <div className="space-y-6">
+            {sets.map((set) => (
+              <ChitFundCalculation key={set._id} chitSet={set} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Set Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

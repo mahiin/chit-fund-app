@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'user'],
+    enum: ['superadmin', 'admin', 'user'],
     default: 'user',
     required: true,
   },
@@ -52,15 +52,38 @@ async function createDefaultUsers() {
     });
     console.log('✅ Connected to MongoDB\n');
 
+    // Check if superadmin exists
+    const existingSuperAdmin = await User.findOne({ role: 'superadmin' });
+    if (existingSuperAdmin) {
+      console.log('⚠️  Super Admin user already exists');
+      console.log(`   Username: ${existingSuperAdmin.username}`);
+      console.log(`   ID: ${existingSuperAdmin._id}`);
+    } else {
+      // Create superadmin user
+      console.log('📝 Creating Super Admin user...');
+      const superAdminPassword = await bcrypt.hash('superadmin123', 10);
+      const superAdmin = new User({
+        username: 'superadmin',
+        password: superAdminPassword,
+        role: 'superadmin',
+        name: 'Super Administrator',
+      });
+      await superAdmin.save();
+      console.log('✅ Super Admin user created successfully');
+      console.log('   Username: superadmin');
+      console.log('   Password: superadmin123');
+      console.log(`   ID: ${superAdmin._id}`);
+    }
+
     // Check if admin exists
     const existingAdmin = await User.findOne({ role: 'admin' });
     if (existingAdmin) {
-      console.log('⚠️  Admin user already exists');
+      console.log('\n⚠️  Admin user already exists');
       console.log(`   Username: ${existingAdmin.username}`);
       console.log(`   ID: ${existingAdmin._id}`);
     } else {
       // Create admin user
-      console.log('📝 Creating admin user...');
+      console.log('\n📝 Creating admin user...');
       const adminPassword = await bcrypt.hash('admin123', 10);
       const admin = new User({
         username: 'admin',

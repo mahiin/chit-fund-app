@@ -87,11 +87,15 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Calculate winner amount: Each winner gets 25% of total collection
+    const totalCollection = chitSet.totalMembers * chitSet.monthlyAmount;
+    const eachWinnerAmount = totalCollection / 4; // 25% per winner
+
     const winnerDetail = {
       memberId: member.memberId || '',
       memberName: member.name || '',
       dateWon: new Date(),
-      amount: chitSet.monthlyAmount,
+      amount: Math.round(eachWinnerAmount), // 25% of total collection
     };
 
     // Update chit set: move winner to history and remove from active

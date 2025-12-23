@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Member from '@/models/Member';
 import ChitSet from '@/models/ChitSet';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Check if user is superadmin
+    const session = getSessionFromRequest(request);
+    if (!session || session.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Super Admin access required' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
 
     const searchParams = request.nextUrl.searchParams;
@@ -61,8 +71,17 @@ export async function DELETE(request: NextRequest) {
 }
 
 // GET endpoint to check current data counts
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check if user is superadmin
+    const session = getSessionFromRequest(request);
+    if (!session || session.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Super Admin access required' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
 
     const memberCount = await Member.countDocuments({});

@@ -35,7 +35,8 @@ export function middleware(request: NextRequest) {
   if (isAdminRoute) {
     try {
       const session = JSON.parse(sessionCookie.value);
-      if (session.role !== 'admin') {
+      // Allow superadmin and admin access
+      if (session.role !== 'admin' && session.role !== 'superadmin') {
         if (pathname.startsWith('/api')) {
           return NextResponse.json(
             { error: 'Forbidden - Admin access required' },
@@ -46,6 +47,30 @@ export function middleware(request: NextRequest) {
       }
     } catch {
       // Invalid session
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  // Check superadmin access for cleanup route
+  if (pathname.startsWith('/admin/cleanup')) {
+    try {
+      const session = JSON.parse(sessionCookie.value);
+      if (session.role !== 'superadmin') {
+        if (pathname.startsWith('/api')) {
+          return NextResponse.json(
+            { error: 'Forbidden - Super Admin access required' },
+            { status: 403 }
+          );
+        }
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    } catch {
       if (pathname.startsWith('/api')) {
         return NextResponse.json(
           { error: 'Unauthorized' },

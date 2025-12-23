@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 interface User {
   id: string;
   username: string;
-  role: 'admin' | 'user';
+  role: 'superadmin' | 'admin' | 'user';
   name: string;
   email?: string;
   createdAt: string;
@@ -16,7 +16,7 @@ interface User {
 
 export default function UserManagementPage() {
   const router = useRouter();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, isSuperAdmin, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -25,7 +25,7 @@ export default function UserManagementPage() {
     password: '',
     name: '',
     email: '',
-    role: 'user' as 'admin' | 'user',
+    role: 'user' as 'superadmin' | 'admin' | 'user',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -228,11 +228,12 @@ export default function UserManagementPage() {
                   </label>
                   <select
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'user' })}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'superadmin' | 'admin' | 'user' })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                    {isSuperAdmin() && <option value="superadmin">Super Admin</option>}
                   </select>
                 </div>
               </div>
@@ -294,12 +295,14 @@ export default function UserManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          userItem.role === 'admin'
+                          userItem.role === 'superadmin'
+                            ? 'bg-red-100 text-red-800'
+                            : userItem.role === 'admin'
                             ? 'bg-purple-100 text-purple-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}
                       >
-                        {userItem.role}
+                        {userItem.role === 'superadmin' ? 'Super Admin' : userItem.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

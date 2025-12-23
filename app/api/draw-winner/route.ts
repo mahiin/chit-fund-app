@@ -37,6 +37,10 @@ export async function PATCH(request: NextRequest) {
     const shuffled = [...chitSet.activeMembers].sort(() => 0.5 - Math.random());
     const winners = shuffled.slice(0, 3);
 
+    // Calculate winner amount: Each winner gets 25% of total collection
+    const totalCollection = chitSet.totalMembers * chitSet.monthlyAmount;
+    const eachWinnerAmount = totalCollection / 4; // 25% per winner
+
     // Get member details
     const winnerDetails = await Promise.all(
       winners.map(async (winner: any) => {
@@ -45,7 +49,7 @@ export async function PATCH(request: NextRequest) {
           memberId: member?.memberId || '',
           memberName: member?.name || '',
           dateWon: new Date(),
-          amount: chitSet.monthlyAmount,
+          amount: Math.round(eachWinnerAmount), // 25% of total collection
         };
       })
     );

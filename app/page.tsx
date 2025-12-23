@@ -13,7 +13,7 @@ type Tab = 'dashboard' | 'management' | 'ledger' | 'draw';
 
 export default function Home() {
   const router = useRouter();
-  const { user, loading, logout, isAdmin } = useAuth();
+  const { user, loading, logout, isAdmin, isSuperAdmin, canUpload } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -88,6 +88,14 @@ export default function Home() {
                 >
                   📋 Member Ledger
                 </button>
+                {canUpload() && (
+                  <Link
+                    href="/upload"
+                    className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap text-slate-200 hover:bg-slate-600 hover:text-white"
+                  >
+                    📤 Upload
+                  </Link>
+                )}
                 <button
                   onClick={() => setActiveTab('draw')}
                   className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
@@ -98,37 +106,33 @@ export default function Home() {
                 >
                   🎰 Live Draw
                 </button>
+                {canUpload() && (
+                  <>
+                    <Link
+                      href="/admin/create-sets"
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap text-slate-200 hover:bg-slate-600 hover:text-white"
+                    >
+                      ➕ Create Sets
+                    </Link>
+                    <Link
+                      href="/admin/users"
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap text-slate-200 hover:bg-slate-600 hover:text-white"
+                    >
+                      👥 Users
+                    </Link>
+                    {isSuperAdmin() && (
+                      <Link
+                        href="/admin/cleanup"
+                        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap text-slate-200 hover:bg-slate-600 hover:text-white"
+                      >
+                        🗑️ Cleanup
+                      </Link>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-1 sm:space-x-2">
-              {isAdmin() && (
-                <>
-                  <Link
-                    href="/upload"
-                    className="text-white hover:bg-white/20 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-                  >
-                    📤 Upload
-                  </Link>
-                  <Link
-                    href="/admin/create-sets"
-                    className="text-white hover:bg-white/20 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-                  >
-                    ➕ Create Sets
-                  </Link>
-                  <Link
-                    href="/admin/users"
-                    className="text-white hover:bg-white/20 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-                  >
-                    👥 Users
-                  </Link>
-                  <Link
-                    href="/admin/cleanup"
-                    className="text-white hover:bg-white/20 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-                  >
-                    🗑️ Cleanup
-                  </Link>
-                </>
-              )}
               <Link
                 href="/search"
                 className="text-white hover:bg-white/20 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap"
