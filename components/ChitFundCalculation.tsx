@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ChitSet {
   _id: string;
@@ -9,6 +9,14 @@ interface ChitSet {
   monthlyAmount: number;
   activeMembers: any[];
   winnerHistory: any[];
+}
+
+interface WinnerWithDetails {
+  memberId: string;
+  memberName: string;
+  mobile?: string;
+  dateWon: Date;
+  amount: number;
 }
 
 interface DrawCalculation {
@@ -27,6 +35,57 @@ interface ChitFundCalculationProps {
 
 export default function ChitFundCalculation({ chitSet }: ChitFundCalculationProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [winnersWithDetails, setWinnersWithDetails] = useState<WinnerWithDetails[][]>([]);
+
+  // Fetch member details for winners
+  useEffect(() => {
+    const fetchWinnerDetails = async () => {
+      if (chitSet.winnerHistory.length === 0) {
+        setWinnersWithDetails([]);
+        return;
+      }
+
+      try {
+        // Fetch all members to create a lookup map
+        const membersResponse = await fetch('/api/members');
+        const membersData = await membersResponse.json();
+        const memberMap = new Map();
+        
+        if (membersData.success) {
+          membersData.members.forEach((member: any) => {
+            memberMap.set(member.memberId, member);
+          });
+        }
+
+        // Group winners by draw (3 winners per draw)
+        const groupedWinners: WinnerWithDetails[][] = [];
+        for (let i = 0; i < chitSet.winnerHistory.length; i += 3) {
+          const drawWinners = chitSet.winnerHistory.slice(i, i + 3);
+          
+          // Map winners with member details
+          const winnersWithPhone = drawWinners.map((winner: any) => {
+            const member = memberMap.get(winner.memberId);
+            return {
+              ...winner,
+              mobile: member?.mobile || 'N/A',
+            };
+          });
+          groupedWinners.push(winnersWithPhone);
+        }
+        setWinnersWithDetails(groupedWinners);
+      } catch (error) {
+        console.error('Error fetching winner details:', error);
+        // Fallback: group without phone numbers
+        const grouped: WinnerWithDetails[][] = [];
+        for (let i = 0; i < chitSet.winnerHistory.length; i += 3) {
+          grouped.push(chitSet.winnerHistory.slice(i, i + 3).map((w: any) => ({ ...w, mobile: 'N/A' })));
+        }
+        setWinnersWithDetails(grouped);
+      }
+    };
+
+    fetchWinnerDetails();
+  }, [chitSet.winnerHistory]);
 
   // Calculate all draws
   const calculateDraws = (): DrawCalculation[] => {
@@ -208,19 +267,41 @@ export default function ChitFundCalculation({ chitSet }: ChitFundCalculationProp
                         ₹{calc.eachParticipantShare.toLocaleString()}
                       </td>
                       <td className="px-4 py-3">
-                        {isCompleted ? (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                            ✓ Completed
-                          </span>
-                        ) : isCurrent ? (
-                          <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium">
-                            🔄 Next
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                            Pending
-                          </span>
-                        )}
+                        <div className="space-y-2">
+                          {isCompleted ? (
+                            <>
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium block w-fit">
+                                ✓ Completed
+                              </span>
+                              {/* Winner Details */}
+                              {winnersWithDetails[index] && winnersWithDetails[index].length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-green-200">
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {winnersWithDetails[index].map((winner, idx) => (
+                                      <div key={idx} className="text-xs bg-white rounded-md p-1.5 border border-gray-300 shadow-sm hover:shadow-md transition-shadow flex-shrink-0 min-w-[140px]">
+                                        <div className="font-semibold text-gray-900 mb-0.5 text-[11px] leading-tight">{winner.memberName}</div>
+                                        <div className="text-gray-700 font-mono text-[10px] mb-0.5 leading-tight">
+                                          <span className="font-medium">AGR:</span> {winner.memberId}
+                                        </div>
+                                        <div className="text-gray-700 text-[10px] leading-tight">
+                                          <span className="font-medium">📱</span> {winner.mobile || 'N/A'}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : isCurrent ? (
+                            <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium">
+                              🔄 Next
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                              Pending
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
