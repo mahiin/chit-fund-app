@@ -7,9 +7,10 @@ import Dashboard from '@/components/Dashboard';
 import ManagementOverview from '@/components/ManagementOverview';
 import MemberLedger from '@/components/MemberLedger';
 import LiveDraw from '@/components/LiveDraw';
+import UserOverview from '@/components/UserOverview';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'dashboard' | 'management' | 'ledger' | 'draw';
+type Tab = 'dashboard' | 'management' | 'ledger' | 'draw' | 'user';
 
 export default function Home() {
   const router = useRouter();
@@ -89,12 +90,24 @@ export default function Home() {
                   📋 Member Ledger
                 </button>
                 {canUpload() && (
-                  <Link
-                    href="/upload"
-                    className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap text-slate-200 hover:bg-slate-600 hover:text-white"
-                  >
-                    📤 Upload
-                  </Link>
+                  <>
+                    <button
+                      onClick={() => setActiveTab('user')}
+                      className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                        activeTab === 'user'
+                          ? 'bg-slate-100 text-slate-800 shadow-md'
+                          : 'text-slate-200 hover:bg-slate-600 hover:text-white'
+                      }`}
+                    >
+                      👤 User
+                    </button>
+                    <Link
+                      href="/upload"
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap text-slate-200 hover:bg-slate-600 hover:text-white"
+                    >
+                      📤 Upload
+                    </Link>
+                  </>
                 )}
                 <button
                   onClick={() => setActiveTab('draw')}
@@ -162,6 +175,7 @@ export default function Home() {
         {isAdmin() && activeTab === 'management' && <ManagementOverview />}
         {activeTab === 'ledger' && <MemberLedger />}
         {activeTab === 'draw' && <LiveDraw />}
+        {canUpload() && activeTab === 'user' && <UserOverview />}
       </main>
     </div>
   );
